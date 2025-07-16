@@ -1,0 +1,87 @@
+// @version=5
+indicator("ATR Level Lines", overlay=true)
+
+// 入力パラメータの設定
+atr_length = input.int(14, title="ATR Period", minval=1)
+label_size = input.string("small", title="Label Size", options=["tiny", "small", "normal", "large"])
+
+// 前日の日足ATRを取得
+prev_day_atr = request.security(syminfo.tickerid, "D", ta.atr(atr_length)[1], lookahead=barmerge.lookahead_on)
+
+// 当日日足の始値を取得
+// timeframeを確認し、日足に変換
+current_open = request.security(syminfo.tickerid, "D", open[0], lookahead=barmerge.lookahead_on)
+
+// 表示するATRレベルの計算
+level_plus_100 = current_open + prev_day_atr        // +100% ATR
+level_plus_75 = current_open + prev_day_atr * 0.75  // +75% ATR
+level_plus_50 = current_open + prev_day_atr * 0.5   // +50% ATR
+level_plus_25 = current_open + prev_day_atr * 0.25  // +25% ATR
+level_minus_25 = current_open - prev_day_atr * 0.25 // -25% ATR
+level_minus_50 = current_open - prev_day_atr * 0.5  // -50% ATR
+level_minus_75 = current_open - prev_day_atr * 0.75 // -75% ATR
+level_minus_100 = current_open - prev_day_atr       // -100% ATR
+
+// 色の設定
+color_plus_100 = color.new(color.green, 0)
+color_plus_75 = color.new(color.green, 30)
+color_plus_50 = color.new(color.lime, 0)
+color_plus_25 = color.new(color.lime, 30)
+color_minus_25 = color.new(color.orange, 30)
+color_minus_50 = color.new(color.orange, 0)
+color_minus_75 = color.new(color.red, 30)
+color_minus_100 = color.new(color.red, 0)
+
+// 各水平線の描画（plot関数を使用）
+p1 = plot(level_plus_100, title="+100% ATR", color=color_plus_100, linewidth=1, style=plot.style_line)
+p2 = plot(level_plus_75, title="+75% ATR", color=color_plus_75, linewidth=1, style=plot.style_line)
+p3 = plot(level_plus_50, title="+50% ATR", color=color_plus_50, linewidth=1, style=plot.style_line)
+p4 = plot(level_plus_25, title="+25% ATR", color=color_plus_25, linewidth=1, style=plot.style_line)
+p5 = plot(level_minus_25, title="-25% ATR", color=color_minus_25, linewidth=1, style=plot.style_line)
+p6 = plot(level_minus_50, title="-50% ATR", color=color_minus_50, linewidth=1, style=plot.style_line)
+p7 = plot(level_minus_75, title="-75% ATR", color=color_minus_75, linewidth=1, style=plot.style_line)
+p8 = plot(level_minus_100, title="-100% ATR", color=color_minus_100, linewidth=1, style=plot.style_line)
+
+// ラインにラベルを追加
+// 現在の足のバーインデックスを取得
+var label plus_100_label = na
+var label plus_75_label = na
+var label plus_50_label = na
+var label plus_25_label = na
+var label minus_25_label = na
+var label minus_50_label = na
+var label minus_75_label = na
+var label minus_100_label = na
+
+// バーが変わるたびにラベルを更新
+if barstate.islast
+    // 既存のラベルを削除
+    label.delete(plus_100_label)
+    label.delete(plus_75_label)
+    label.delete(plus_50_label)
+    label.delete(plus_25_label)
+    label.delete(minus_25_label)
+    label.delete(minus_50_label)
+    label.delete(minus_75_label)
+    label.delete(minus_100_label)
+    
+    // ラベルサイズの設定
+    var label_size_value = size.small
+    if label_size == "tiny"
+        label_size_value := size.tiny
+    else if label_size == "small"
+        label_size_value := size.small
+    else if label_size == "normal"
+        label_size_value := size.normal
+    else if label_size == "large"
+        label_size_value := size.large
+    
+    // 新しいラベルを作成
+    plus_100_label := label.new(bar_index, level_plus_100, "+100%", color=color.new(color.white, 100), style=label.style_label_left, textcolor=color_plus_100, size=label_size_value)
+    plus_75_label := label.new(bar_index, level_plus_75, "+75%", color=color.new(color.white, 100), style=label.style_label_left, textcolor=color_plus_75, size=label_size_value)
+    plus_50_label := label.new(bar_index, level_plus_50, "+50%", color=color.new(color.white, 100), style=label.style_label_left, textcolor=color_plus_50, size=label_size_value)
+    plus_25_label := label.new(bar_index, level_plus_25, "+25%", color=color.new(color.white, 100), style=label.style_label_left, textcolor=color_plus_25, size=label_size_value)
+    minus_25_label := label.new(bar_index, level_minus_25, "-25%", color=color.new(color.white, 100), style=label.style_label_left, textcolor=color_minus_25, size=label_size_value)
+    minus_50_label := label.new(bar_index, level_minus_50, "-50%", color=color.new(color.white, 100), style=label.style_label_left, textcolor=color_minus_50, size=label_size_value)
+    minus_75_label := label.new(bar_index, level_minus_75, "-75%", color=color.new(color.white, 100), style=label.style_label_left, textcolor=color_minus_75, size=label_size_value)
+    minus_100_label := label.new(bar_index, level_minus_100, "-100%", color=color.new(color.white, 100), style=label.style_label_left, textcolor=color_minus_100, size=label_size_value)
